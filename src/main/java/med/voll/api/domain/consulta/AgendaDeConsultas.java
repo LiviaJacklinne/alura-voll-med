@@ -1,6 +1,7 @@
 package med.voll.api.domain.consulta;
 
-import med.voll.api.domain.consulta.validacoes.ValidadorAgendamentoDeConsulta;
+import med.voll.api.domain.consulta.validacoes.agendamento.ValidadorAgendamentoDeConsulta;
+import med.voll.api.domain.consulta.validacoes.cancelamento.ValidadorCancelamentoDeConsulta;
 import med.voll.api.domain.medico.Medico;
 import med.voll.api.domain.medico.MedicoRepository;
 import med.voll.api.domain.paciente.PacienteRepository;
@@ -20,7 +21,9 @@ public class AgendaDeConsultas {
     @Autowired
     private PacienteRepository pacienteRepository;
     @Autowired
-    private List<ValidadorAgendamentoDeConsulta> validadores; // importando a interface de validação
+    private List<ValidadorAgendamentoDeConsulta> validadoresAgendamento; // importando a interface de validação
+    @Autowired
+    private List<ValidadorCancelamentoDeConsulta> validadoresCancelamento;
 
     public DadosDetalhamentoConsulta agendar(DadosAgendamentoConsulta dados) throws ValidacaoException {
 
@@ -33,7 +36,7 @@ public class AgendaDeConsultas {
         }
 
         // forma limpa e recursiva de validar dados
-        validadores.forEach(v -> v.validar(dados));
+        validadoresAgendamento.forEach(v -> v.validar(dados));
 
         // o findById retorna um Optional, por isso o .get() para pegar o objeto dentro do Optional
         var paciente = pacienteRepository.getReferenceById(dados.idPaciente());
@@ -43,7 +46,7 @@ public class AgendaDeConsultas {
             throw new ValidacaoException("Não existe médico disponível nessa data!");
         }
 
-        var consulta = new Consulta(null, medico, paciente, dados.data());
+        var consulta = new Consulta(null, medico, paciente, dados.data(), null);
         consultaRepository.save(consulta);
 
         return new DadosDetalhamentoConsulta(consulta);
@@ -59,5 +62,16 @@ public class AgendaDeConsultas {
         }
 
         return medicoRepository.escolherMedicoAleatorioLivreNaData(dados.especialidade(), dados.data());
+    }
+
+    public void cancelar(DadosCancelamentoConsulta dados) {
+        if (!consultaRepository.existsById(dados.idConsulta())) {
+            throw new ValidacaoException("Id da consulta informado não existe!");
+        }
+
+        validadoresCancelamento.forEach(v -> v.validar(dados));
+
+        var consulta = consultaRepository.getReferenceById(dados.idConsulta());
+        consulta.cancelar(dados.motivo());
     }
 }
