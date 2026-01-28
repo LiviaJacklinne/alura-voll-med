@@ -25,25 +25,12 @@ spring.data.web.pageable.page-parameter=pagina
 spring.data.web.pageable.size-parameter=tamanho
 spring.data.web.sort.sort-parameter=ordem
 ```
-
-## Endpoints
-- `GET /medicos?size=5&page=1` - Listar médicos com paginação, filtro e ordenação
-- `POST /medicos` - Cadastrar um novo médico
-```
-{
-    "nome": "Rodrigo Ferreira",
-    "email": "rodrigo.ferreira@voll.med",
-    "crm": "123456",
-    "especialidade": "ORTOPEDIA",
-    "telefone": "8798797",
-    "endereco": {
-        "logradouro": "rua 1",
-        "bairro": "bairro",
-        "cep": "12345678",
-        "cidade": "Brasilia",
-        "uf": "DF",
-        "numero": "1",
-        "complemento": "complemento"
-        }
-}
-```
+## Para executar o .jar no servidor
+- O `-Dspring.profiles.active=prod` serve para qual perfil de configuração será utilizado, 
+no caso o `prod` que está configurado no `application-prod.properties`.
+- Passando as variaveis de ambiente durante execução do .jar `DDATASOURCE_PASSWORD`, `DDATASOURCE_URL`,
+`DDATASOURCE_USERNAME`
+````
+java -Dspring.profiles.active=prod -DDATASOURCE_URL=jdbc:mysql://localhost/vollmed_api -DDATASOURCE_USERNAME=root
+ -DDATASOURCE_PASSWORD=root -jar target/api-0.0.1-SNAPSHOT.jar
+````
